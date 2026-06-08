@@ -2,7 +2,7 @@ package matching
 
 import "image"
 
-func CalculateScore(img, template *image.RGBA, dx int) (float64, int) {
+func calculateScore(img, template *image.RGBA, dx int) (float64, int) {
 	imgW, imgH := img.Bounds().Dx(), img.Bounds().Dy()
 	templateW, templateH := template.Bounds().Dx(), template.Bounds().Dy()
 
