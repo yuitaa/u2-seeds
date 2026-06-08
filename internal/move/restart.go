@@ -19,9 +19,9 @@ func RestartMove(seed seed.SeedString) {
 	// 構成変更
 	robotgo.KeyDown(robotgo.KeyW)
 	robotgo.KeyDown(robotgo.KeyD)
-	time.Sleep(900 * time.Millisecond)
+	time.Sleep(850 * time.Millisecond)
 	robotgo.KeyUp(robotgo.KeyW)
-	time.Sleep(400 * time.Millisecond)
+	time.Sleep(450 * time.Millisecond)
 	robotgo.KeyUp(robotgo.KeyD)
 	time.Sleep(800 * time.Millisecond)
 	robotgo.KeyDown(robotgo.Space)
