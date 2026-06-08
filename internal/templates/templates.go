@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	BiomeTemplate, _     = loadTemplates("biomes")
 	TaskTemplate, _      = loadTemplates("tasks")
 	ExtensionTemplate, _ = loadTemplates("extensions")
 	WagonTemplate, _     = loadTemplates("wagons")
