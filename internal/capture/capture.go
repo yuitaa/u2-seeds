@@ -1,7 +1,6 @@
 package capture
 
 import (
-	"fmt"
 	"image"
 
 	"github.com/go-vgo/robotgo"
@@ -9,7 +8,15 @@ import (
 	"github.com/yuitaa/u2-seeds/internal/templates"
 )
 
-func GetInformation() {
+type Information struct {
+	UpperTask      string
+	UpperExtension string
+	LowerTask      string
+	LowerExtension string
+	Wagons         []string
+}
+
+func GetInformation() (*Information, bool) {
 	getTasks := func(r rect) (string, string) {
 		screen := captureScreen(r)
 		rgba, ok := screen.(*image.RGBA)
@@ -35,19 +42,26 @@ func GetInformation() {
 	upperTask, upperExtension := getTasks(upperTaskRect)
 	lowerTask, lowerExtension := getTasks(lowerTaskRect)
 
-	fmt.Printf("Task: %s, Extension: %s\n", upperTask, upperExtension)
-	fmt.Printf("Task: %s, Extension: %s\n", lowerTask, lowerExtension)
-
+	var wagons []string
 	screen := captureScreen(wagonRect)
-	rgba, ok := screen.(*image.RGBA)
-	if !ok {
-		return
+	if rgba, ok := screen.(*image.RGBA); ok {
+		wagonMatch := *matching.MatchTemplate(rgba, &templates.WagonTemplate, false)
+		for _, wagon := range wagonMatch {
+			wagons = append(wagons, wagon.Key)
+		}
 	}
-	wagonMatch := *matching.MatchTemplate(rgba, &templates.WagonTemplate, false)
 
-	for i, wagon := range wagonMatch {
-		fmt.Printf("Wagon %d: %s\n", i, wagon.Key)
+	info := &Information{
+		UpperTask:      upperTask,
+		UpperExtension: upperExtension,
+		LowerTask:      lowerTask,
+		LowerExtension: lowerExtension,
+		Wagons:         wagons,
 	}
+
+	ok := upperTask != "" && upperExtension != "" && lowerTask != "" && lowerExtension != "" && len(wagons) > 0
+
+	return info, ok
 }
 
 func captureScreen(r rect) image.Image {
