@@ -16,8 +16,10 @@ var (
 	WagonTemplate, _     = loadTemplates("wagons")
 )
 
-func loadTemplates(dir string) (map[string]*image.RGBA, error) {
-	imageMap := make(map[string]*image.RGBA)
+type TemplateMap = map[string]*image.RGBA
+
+func loadTemplates(dir string) (TemplateMap, error) {
+	imageMap := make(TemplateMap)
 	templateDir := filepath.Join("internal/templates", dir)
 
 	files, err := os.ReadDir(templateDir)
