@@ -25,7 +25,7 @@ TemplateLoop:
 		var bestMatch *ScoreEntry
 
 		for dx := range imgW - templateW {
-			score, _ := calculateScore(img, template, dx)
+			score := calculateScore(img, template, dx)
 
 			if score > threshold {
 				if bestMatch == nil || dx > bestMatch.Dx+10 {

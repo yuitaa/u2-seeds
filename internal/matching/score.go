@@ -2,12 +2,12 @@ package matching
 
 import "image"
 
-func calculateScore(img, template *image.RGBA, dx int) (float64, int) {
+func calculateScore(img, template *image.RGBA, dx int) float64 {
 	imgW, imgH := img.Bounds().Dx(), img.Bounds().Dy()
 	templateW, templateH := template.Bounds().Dx(), template.Bounds().Dy()
 
 	if imgH != templateH || dx < 0 || dx+templateW > imgW {
-		return 0, 0
+		return 0
 	}
 
 	maxPossibleDiff := float64(3 * 255 * templateW * templateH)
@@ -31,7 +31,7 @@ func calculateScore(img, template *image.RGBA, dx int) (float64, int) {
 		}
 	}
 	normalized := 1.0 - (float64(rawScore) / maxPossibleDiff)
-	return normalized, rawScore
+	return normalized
 }
 
 func absInt(x int) int {
