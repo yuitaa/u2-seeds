@@ -1,14 +1,9 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/yuitaa/u2-seeds/internal/templates"
+	"github.com/yuitaa/u2-seeds/internal/move"
 )
 
 func main() {
-	templ := templates.WagonTemplate
-	for key, value := range templ {
-		fmt.Printf("Key: %s, Value: %d\n", key, value)
-	}
+	move.RestartMove("Unrailed")
 }
