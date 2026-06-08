@@ -8,7 +8,7 @@ import (
 type SeedString string
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-"
-const prefix = "U"
+const prefix = "0"
 
 type SeedGenerator struct {
 	rng *rand.Rand
