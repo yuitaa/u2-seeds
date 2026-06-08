@@ -30,7 +30,7 @@ func calculateScore(img, template *image.RGBA, dx int) (float64, int) {
 			rawScore += dr + dg + db
 		}
 	}
-	normalized := float64(rawScore) / maxPossibleDiff
+	normalized := 1.0 - (float64(rawScore) / maxPossibleDiff)
 	return normalized, rawScore
 }
 
