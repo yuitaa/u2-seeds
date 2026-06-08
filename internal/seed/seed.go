@@ -7,7 +7,7 @@ import (
 
 type SeedString string
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-"
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 const prefix = "0"
 
 type SeedGenerator struct {
