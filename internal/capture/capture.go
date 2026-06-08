@@ -6,8 +6,8 @@ import (
 	"github.com/go-vgo/robotgo"
 )
 
-func CaptureScreen(x, y, w, h int) image.Image {
-	bit := robotgo.CaptureScreen(x, y, w, h)
+func CaptureScreen(r Rect) image.Image {
+	bit := robotgo.CaptureScreen(r.X, r.Y, r.W, r.H)
 	defer robotgo.FreeBitmap(bit)
 	img := robotgo.ToImage(bit)
 	return img
