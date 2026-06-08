@@ -2,6 +2,7 @@ package matching
 
 import (
 	"image"
+	"sort"
 
 	"github.com/yuitaa/u2-seeds/internal/templates"
 )
@@ -37,6 +38,10 @@ TemplateLoop:
 			}
 		}
 	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Dx < results[j].Dx
+	})
 
 	return &results
 }
