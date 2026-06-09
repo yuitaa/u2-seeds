@@ -1,0 +1,187 @@
+---
+import fs from 'node:fs/promises';
+import { translateTask, translateExtension } from '../data/labels';
+
+// CSV読み込み
+const csvText = await fs.readFile('seeds.csv', 'utf-8');
+const lines = csvText.trim().split('\n');
+const rows = lines.slice(1).map((line) => line.split(','));
+
+// mapping.json読み込み・逆引きマップ作成
+const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
+const reverse = (obj: Record<string, number>): Map<number, string> =>
+  new Map(Object.entries(obj).map(([k, v]) => [v, k]));
+
+const tasksRev = reverse(mappingJson.tasks);
+const extensionsRev = reverse(mappingJson.extensions);
+const wagonsRev = reverse(mappingJson.wagons);
+const enginesRev = reverse(mappingJson.engines);
+const versionsRev = reverse(mappingJson.versions);
+
+interface SeedRow {
+  seed: string;
+  upperTask: string;
+  upperExtension: string;
+  lowerTask: string;
+  lowerExtension: string;
+  wagons: string[];
+  engine: string;
+  version: string;
+  // data属性用の生キー
+  upperTaskKey: string;
+  upperExtensionKey: string;
+  lowerTaskKey: string;
+  lowerExtensionKey: string;
+  engineKey: string;
+  versionKey: string;
+}
+
+const decoded: SeedRow[] = rows.map((r) => {
+  const upperTaskKey = tasksRev.get(Number(r[1])) ?? r[1];
+  const upperExtKey = extensionsRev.get(Number(r[2])) ?? r[2];
+  const lowerTaskKey = tasksRev.get(Number(r[3])) ?? r[3];
+  const lowerExtKey = extensionsRev.get(Number(r[4])) ?? r[4];
+  const wagonKeys = r[5]
+    .split(';')
+    .map((id) => wagonsRev.get(Number(id)) ?? id);
+  const engineKey = enginesRev.get(Number(r[6])) ?? r[6];
+  const versionKey = versionsRev.get(Number(r[7])) ?? r[7];
+
+  return {
+    seed: r[0],
+    upperTask: translateTask(upperTaskKey),
+    upperExtension: translateExtension(upperExtKey),
+    lowerTask: translateTask(lowerTaskKey),
+    lowerExtension: translateExtension(lowerExtKey),
+    wagons: wagonKeys,
+    engine: engineKey,
+    version: versionKey,
+    upperTaskKey,
+    upperExtensionKey: upperExtKey,
+    lowerTaskKey,
+    lowerExtensionKey: lowerExtKey,
+    engineKey,
+    versionKey,
+  };
+});
+---
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Seed</th>
+        <th>Task 1</th>
+        <th>Extension 1</th>
+        <th>Task 2</th>
+        <th>Extension 2</th>
+        <th>Wagons</th>
+        <th>Engine</th>
+        <th>Version</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        decoded.map((row) => (
+          <tr
+            data-seed={row.seed}
+            data-upper-task={row.upperTaskKey}
+            data-upper-extension={row.upperExtensionKey}
+            data-lower-task={row.lowerTaskKey}
+            data-lower-extension={row.lowerExtensionKey}
+            data-wagon={row.wagons.join(',')}
+            data-engine={row.engineKey}>
+            <td class="seed-cell" data-copy={row.seed}>
+              <code>{row.seed}</code>
+            </td>
+            <td>{row.upperTask}</td>
+            <td>{row.upperExtension}</td>
+            <td>{row.lowerTask}</td>
+            <td>{row.lowerExtension}</td>
+            <td>{row.wagons.join(', ')}</td>
+            <td>{row.engine}</td>
+            <td>{row.version}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #ccc;
+    min-width: max-content;
+    font-size: 0.875rem;
+  }
+
+  th,
+  td {
+    padding: 6px 12px;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  th:last-child,
+  td:last-child {
+    border-right: none;
+  }
+
+  thead tr:last-child th {
+    border-bottom: 1px solid #ccc;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  th {
+    background: #f0f0f0;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+  }
+
+  tbody tr:nth-child(odd) {
+    background: #fff;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f9f9f9;
+  }
+
+  :global(.seed-cell) {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  :global(.seed-cell:hover code) {
+    text-decoration: underline;
+  }
+
+  :global(.seed-cell.copied code::after) {
+    content: ' ✓';
+    color: green;
+  }
+</style>
+
+<script>
+  document
+    .querySelectorAll<HTMLTableCellElement>('.seed-cell')
+    .forEach((cell) => {
+      cell.addEventListener('click', async () => {
+        const text = cell.dataset.copy ?? '';
+        await navigator.clipboard.writeText(text);
+        cell.classList.add('copied');
+        setTimeout(() => cell.classList.remove('copied'), 1500);
+      });
+    });
+</script>
