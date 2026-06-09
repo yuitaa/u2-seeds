@@ -8,7 +8,7 @@ const BIOME_WAGONS = new Set(['boiler', 'boxcar', 'cargo', 'island', 'lab', 'loc
 
 const allWagons = Object.keys(mappingJson.wagons).sort();
 const wagonOnly = allWagons.filter((k) => !BIOME_WAGONS.has(k));
-const biomeWagons = allWagons.filter((k) => BIOME_WAGONS.has(k));
+const biomeWagons = allWagons.filter((k) => BIOME_WAGONS.has(k)).filter((k) => k !== 'monorail');
 
 const engines = Object.keys(mappingJson.engines).sort();
 const versions = Object.keys(mappingJson.versions).sort();
