@@ -1,7 +1,9 @@
 package capture
 
 import (
+	"fmt"
 	"image"
+	"strings"
 
 	"github.com/go-vgo/robotgo"
 	"github.com/yuitaa/u2-seeds/internal/matching"
@@ -14,6 +16,15 @@ type Information struct {
 	LowerTask      string
 	LowerExtension string
 	Wagons         []string
+}
+
+func (i *Information) String() string {
+	return fmt.Sprintf(
+		"Task: %s, Extension: %s\nTask: %s, Extension: %s\nWagons: %s",
+		i.UpperTask, i.UpperExtension,
+		i.LowerTask, i.LowerExtension,
+		strings.Join(i.Wagons, ", "),
+	)
 }
 
 func GetInformation() (*Information, bool) {

@@ -1,0 +1,66 @@
+{
+  "tasks": {
+    "chop_tree": 3,
+    "curve": 9,
+    "dash": 6,
+    "dont_catch_fire": 4,
+    "hold_tools": 1,
+    "keep_crafter_busy": 12,
+    "kill_no_animals": 7,
+    "let_train_burn": 5,
+    "mine_rock": 10,
+    "one_player_axe": 14,
+    "one_player_track": 13,
+    "stack_items": 8,
+    "straight": 11,
+    "tracks_ahead": 2
+  },
+  "extensions": {
+    "charge": 4,
+    "drop": 8,
+    "front": 1,
+    "ghost": 10,
+    "hydro": 2,
+    "magnet": 6,
+    "pull": 5,
+    "push": 9,
+    "speed": 7,
+    "stack": 3
+  },
+  "wagons": {
+    "boiler": 16,
+    "boxcar": 13,
+    "bridge": 22,
+    "cannon": 2,
+    "cargo": 6,
+    "carriage": 4,
+    "collector": 21,
+    "compactor": 17,
+    "crafter": 10,
+    "dynamite": 14,
+    "ghost": 25,
+    "island": 24,
+    "lab": 3,
+    "loco": 9,
+    "mag_tractor": 11,
+    "milk": 12,
+    "miner": 1,
+    "monorail": 18,
+    "slot": 8,
+    "storage": 15,
+    "supercharger": 23,
+    "tank": 5,
+    "torpedo": 20,
+    "transformer": 19,
+    "turret": 7
+  },
+  "engines": {
+    "ghost": 1,
+    "pusher": 4,
+    "steam": 2,
+    "toy": 3
+  },
+  "versions": {
+    "v-886-41c988c": 1
+  }
+}
