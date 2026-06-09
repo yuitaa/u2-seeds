@@ -39,6 +39,7 @@ export function translateExtension(key: string): string {
 export const wagonLabels: Record<string, string> = {
   boiler: 'ボイラー荒地',
   boxcar: 'ボックスカー湿原',
+  bridge: 'ブリッジワゴン',
   cannon: 'キャノンカート',
   cargo: 'カーゴ渓谷',
   carriage: '輸送ワゴン',
