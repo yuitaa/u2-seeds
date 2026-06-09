@@ -17,14 +17,17 @@ import FilterPanel from '../components/FilterPanel.astro';
         color: #666;
         margin: 0 0 0.5rem;
       }
+      #result-count {
+        font-size: 0.8rem;
+        margin: 0 0 0.5rem;
+      }
     </style>
   </head>
   <body>
     <h1>U2 Seeds</h1>
     <FilterPanel />
-    <p class="guide">
-      Seed をクリックでコピー
-      <SeedTable />
-    </p>
+    <p class="guide">Seed をクリックでコピー</p>
+    <p id="result-count">検索結果: --- 件</p>
+    <SeedTable />
   </body>
 </html>

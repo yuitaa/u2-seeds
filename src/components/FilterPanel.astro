@@ -228,6 +228,10 @@ const versions = Object.keys(mappingJson.versions).sort();
 
       row.style.display = wagonMatch && engineMatch && versionMatch ? '' : 'none';
     });
+
+    const visible = [...rows].filter((r) => r.style.display !== 'none').length;
+    const el = document.getElementById('result-count');
+    if (el) el.textContent = `検索結果: ${visible} 件`;
   }
 
   document
@@ -261,4 +265,6 @@ const versions = Object.keys(mappingJson.versions).sort();
       applyHideTasks(hide);
     });
   }
+
+  applyFilter();
 </script>
