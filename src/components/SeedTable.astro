@@ -18,6 +18,8 @@ const wagonsRev = reverse(mappingJson.wagons);
 const enginesRev = reverse(mappingJson.engines);
 const versionsRev = reverse(mappingJson.versions);
 
+const BIOME_WAGONS = new Set(['boiler', 'boxcar', 'cargo', 'island', 'lab', 'loco', 'monorail']);
+
 interface SeedRow {
   seed: string;
   upperTask: string;
@@ -26,6 +28,7 @@ interface SeedRow {
   lowerExtension: string;
   wagons: string[];
   wagonDisplay: string[];
+  wagonIsBiome: boolean[];
   engine: string;
   version: string;
   // data属性用の生キー
@@ -56,6 +59,7 @@ const decoded: SeedRow[] = rows.map((r) => {
     lowerExtension: translateExtension(lowerExtKey),
     wagons: wagonKeys,
     wagonDisplay: wagonKeys.map(translateWagon),
+    wagonIsBiome: wagonKeys.map((k) => BIOME_WAGONS.has(k)),
     engine: engineKey,
     version: versionKey,
     upperTaskKey,
@@ -101,7 +105,11 @@ const decoded: SeedRow[] = rows.map((r) => {
             <td>{row.upperExtension}</td>
             <td>{row.lowerTask}</td>
             <td>{row.lowerExtension}</td>
-            <td>{row.wagonDisplay.join(', ')}</td>
+            <td>
+              {row.wagonDisplay.map((name, i) => (
+                <span class:list={{ 'biome-wagon': row.wagonIsBiome[i] }}>{name}{i < row.wagonDisplay.length - 1 ? ', ' : ''}</span>
+              ))}
+            </td>
             <td>{row.engine}</td>
             <td>{row.version}</td>
           </tr>
@@ -159,6 +167,12 @@ const decoded: SeedRow[] = rows.map((r) => {
 
   tbody tr:nth-child(even) {
     background: #f9f9f9;
+  }
+
+  .biome-wagon {
+    background: gold;
+    padding: 0 2px;
+    border-radius: 2px;
   }
 
   :global(.seed-cell) {

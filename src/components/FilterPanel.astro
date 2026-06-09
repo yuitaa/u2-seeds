@@ -4,7 +4,7 @@ import { translateWagon } from '../data/labels';
 
 const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
 
-const BIOME_WAGONS = new Set(['boiler', 'boxcar', 'cargo', 'island', 'lab', 'monorail']);
+const BIOME_WAGONS = new Set(['boiler', 'boxcar', 'cargo', 'island', 'lab', 'loco', 'monorail']);
 
 const allWagons = Object.keys(mappingJson.wagons).sort();
 const wagonOnly = allWagons.filter((k) => !BIOME_WAGONS.has(k));
