@@ -1,11 +1,18 @@
 ---
 import fs from 'node:fs/promises';
-import { translateTask, translateExtension, translateWagon } from '../data/labels';
+import {
+  translateTask,
+  translateExtension,
+  translateWagon,
+} from '../data/labels';
 
 // CSV読み込み
 const csvText = await fs.readFile('seeds.csv', 'utf-8');
 const lines = csvText.trim().split('\n');
-const rows = lines.slice(1).reverse().map((line) => line.split(','));
+const rows = lines
+  .slice(1)
+  .reverse()
+  .map((line) => line.split(','));
 
 // mapping.json読み込み・逆引きマップ作成
 const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
@@ -18,7 +25,15 @@ const wagonsRev = reverse(mappingJson.wagons);
 const enginesRev = reverse(mappingJson.engines);
 const versionsRev = reverse(mappingJson.versions);
 
-const BIOME_WAGONS = new Set(['boiler', 'boxcar', 'cargo', 'island', 'lab', 'loco', 'monorail']);
+const BIOME_WAGONS = new Set([
+  'boiler',
+  'boxcar',
+  'cargo',
+  'island',
+  'lab',
+  'loco',
+  'monorail',
+]);
 
 interface SeedRow {
   seed: string;
@@ -107,7 +122,10 @@ const decoded: SeedRow[] = rows.map((r) => {
             <td>{row.lowerExtension}</td>
             <td>
               {row.wagonDisplay.map((name, i) => (
-                <span class:list={{ 'biome-wagon': row.wagonIsBiome[i] }}>{name}{i < row.wagonDisplay.length - 1 ? ', ' : ''}</span>
+                <span class:list={{ 'biome-wagon': row.wagonIsBiome[i] }}>
+                  {name}
+                  {i < row.wagonDisplay.length - 1 ? ', ' : ''}
+                </span>
               ))}
             </td>
             <td>{row.engine}</td>

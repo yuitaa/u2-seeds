@@ -4,11 +4,21 @@ import { translateWagon } from '../data/labels';
 
 const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
 
-const BIOME_WAGONS = new Set(['boiler', 'boxcar', 'cargo', 'island', 'lab', 'loco', 'monorail']);
+const BIOME_WAGONS = new Set([
+  'boiler',
+  'boxcar',
+  'cargo',
+  'island',
+  'lab',
+  'loco',
+  'monorail',
+]);
 
 const allWagons = Object.keys(mappingJson.wagons).sort();
 const wagonOnly = allWagons.filter((k) => !BIOME_WAGONS.has(k));
-const biomeWagons = allWagons.filter((k) => BIOME_WAGONS.has(k)).filter((k) => k !== 'monorail');
+const biomeWagons = allWagons
+  .filter((k) => BIOME_WAGONS.has(k))
+  .filter((k) => k !== 'monorail');
 
 const engines = Object.keys(mappingJson.engines).sort();
 const versions = Object.keys(mappingJson.versions).sort();
@@ -18,28 +28,31 @@ const versions = Object.keys(mappingJson.versions).sort();
   <details open>
     <summary>絞り込み</summary>
     <div class="filter-body">
-
       <div class="filter-group">
         <strong>Engine</strong>
         <div class="checkboxes">
-          {engines.map((key) => (
-            <label>
-              <input type="checkbox" name="engine" value={key} />
-              {key}
-            </label>
-          ))}
+          {
+            engines.map((key) => (
+              <label>
+                <input type="checkbox" name="engine" value={key} />
+                {key}
+              </label>
+            ))
+          }
         </div>
       </div>
 
       <div class="filter-group">
         <strong>Version</strong>
         <div class="checkboxes">
-          {versions.map((key) => (
-            <label>
-              <input type="checkbox" name="version" value={key} />
-              {key}
-            </label>
-          ))}
+          {
+            versions.map((key) => (
+              <label>
+                <input type="checkbox" name="version" value={key} />
+                {key}
+              </label>
+            ))
+          }
         </div>
       </div>
 
@@ -51,22 +64,26 @@ const versions = Object.keys(mappingJson.versions).sort();
         </div>
         <div class="tab-panel active" data-panel="wagon">
           <div class="checkboxes wagons">
-            {wagonOnly.map((key) => (
-              <label>
-                <input type="checkbox" name="wagon" value={key} />
-                {translateWagon(key)}
-              </label>
-            ))}
+            {
+              wagonOnly.map((key) => (
+                <label>
+                  <input type="checkbox" name="wagon" value={key} />
+                  {translateWagon(key)}
+                </label>
+              ))
+            }
           </div>
         </div>
         <div class="tab-panel" data-panel="biome">
           <div class="checkboxes wagons">
-            {biomeWagons.map((key) => (
-              <label>
-                <input type="checkbox" name="wagon" value={key} />
-                {translateWagon(key)}
-              </label>
-            ))}
+            {
+              biomeWagons.map((key) => (
+                <label>
+                  <input type="checkbox" name="wagon" value={key} />
+                  {translateWagon(key)}
+                </label>
+              ))
+            }
           </div>
         </div>
       </div>
@@ -191,8 +208,12 @@ const versions = Object.keys(mappingJson.versions).sort();
     btn.addEventListener('click', () => {
       const tabName = btn.dataset.tab!;
       const group = btn.closest('.wagon-group')!;
-      group.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
-      group.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+      group
+        .querySelectorAll('.tab-btn')
+        .forEach((b) => b.classList.remove('active'));
+      group
+        .querySelectorAll('.tab-panel')
+        .forEach((p) => p.classList.remove('active'));
       btn.classList.add('active');
       group.querySelector(`[data-panel="${tabName}"]`)!.classList.add('active');
     });
@@ -201,15 +222,21 @@ const versions = Object.keys(mappingJson.versions).sort();
   // フィルター
   function applyFilter() {
     const selectedWagons = [
-      ...document.querySelectorAll<HTMLInputElement>('input[name="wagon"]:checked'),
+      ...document.querySelectorAll<HTMLInputElement>(
+        'input[name="wagon"]:checked',
+      ),
     ].map((el) => el.value);
 
     const selectedEngines = [
-      ...document.querySelectorAll<HTMLInputElement>('input[name="engine"]:checked'),
+      ...document.querySelectorAll<HTMLInputElement>(
+        'input[name="engine"]:checked',
+      ),
     ].map((el) => el.value);
 
     const selectedVersions = [
-      ...document.querySelectorAll<HTMLInputElement>('input[name="version"]:checked'),
+      ...document.querySelectorAll<HTMLInputElement>(
+        'input[name="version"]:checked',
+      ),
     ].map((el) => el.value);
 
     const rows = document.querySelectorAll<HTMLTableRowElement>('tbody tr');
@@ -220,13 +247,15 @@ const versions = Object.keys(mappingJson.versions).sort();
       const rowVersion = row.dataset.version ?? '';
 
       const wagonMatch =
-        selectedWagons.length === 0 || selectedWagons.every((w) => rowWagons.includes(w));
+        selectedWagons.length === 0 ||
+        selectedWagons.every((w) => rowWagons.includes(w));
       const engineMatch =
         selectedEngines.length === 0 || selectedEngines.includes(rowEngine);
       const versionMatch =
         selectedVersions.length === 0 || selectedVersions.includes(rowVersion);
 
-      row.style.display = wagonMatch && engineMatch && versionMatch ? '' : 'none';
+      row.style.display =
+        wagonMatch && engineMatch && versionMatch ? '' : 'none';
     });
 
     const visible = [...rows].filter((r) => r.style.display !== 'none').length;
@@ -235,18 +264,24 @@ const versions = Object.keys(mappingJson.versions).sort();
   }
 
   document
-    .querySelectorAll<HTMLInputElement>('input[name="wagon"], input[name="engine"], input[name="version"]')
+    .querySelectorAll<HTMLInputElement>(
+      'input[name="wagon"], input[name="engine"], input[name="version"]',
+    )
     .forEach((cb) => cb.addEventListener('change', applyFilter));
 
   document.getElementById('filter-reset')?.addEventListener('click', () => {
     document
-      .querySelectorAll<HTMLInputElement>('input[name="wagon"], input[name="engine"], input[name="version"]')
+      .querySelectorAll<HTMLInputElement>(
+        'input[name="wagon"], input[name="engine"], input[name="version"]',
+      )
       .forEach((cb) => (cb.checked = false));
     applyFilter();
   });
 
   // Task列 表示/非表示
-  const hideTasksCheckbox = document.getElementById('hide-tasks') as HTMLInputElement | null;
+  const hideTasksCheckbox = document.getElementById(
+    'hide-tasks',
+  ) as HTMLInputElement | null;
   const STORAGE_KEY = 'u2:hide-tasks';
 
   function applyHideTasks(hide: boolean) {
