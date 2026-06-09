@@ -123,6 +123,18 @@ const versions = Object.keys(mappingJson.versions).sort();
     gap: 0.25rem 1rem;
   }
 
+  @media (max-width: 600px) {
+    .checkboxes.wagons {
+      grid-template-columns: max-content;
+    }
+  }
+
+  @media (min-width: 601px) and (max-width: 900px) {
+    .checkboxes.wagons {
+      grid-template-columns: repeat(2, max-content);
+    }
+  }
+
   label {
     display: flex;
     align-items: center;
