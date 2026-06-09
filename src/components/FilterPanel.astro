@@ -1,5 +1,6 @@
 ---
 import fs from 'node:fs/promises';
+import { translateWagon } from '../data/labels';
 
 const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
 
@@ -53,7 +54,7 @@ const versions = Object.keys(mappingJson.versions).sort();
             {wagonOnly.map((key) => (
               <label>
                 <input type="checkbox" name="wagon" value={key} />
-                {key}
+                {translateWagon(key)}
               </label>
             ))}
           </div>
@@ -63,7 +64,7 @@ const versions = Object.keys(mappingJson.versions).sort();
             {biomeWagons.map((key) => (
               <label>
                 <input type="checkbox" name="wagon" value={key} />
-                {key}
+                {translateWagon(key)}
               </label>
             ))}
           </div>
