@@ -1,0 +1,251 @@
+---
+import fs from 'node:fs/promises';
+
+const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
+
+const BIOME_WAGONS = new Set(['boiler', 'boxcar', 'cargo', 'island', 'lab', 'monorail']);
+
+const allWagons = Object.keys(mappingJson.wagons).sort();
+const wagonOnly = allWagons.filter((k) => !BIOME_WAGONS.has(k));
+const biomeWagons = allWagons.filter((k) => BIOME_WAGONS.has(k));
+
+const engines = Object.keys(mappingJson.engines).sort();
+const versions = Object.keys(mappingJson.versions).sort();
+---
+
+<div id="filter-panel">
+  <details open>
+    <summary>絞り込み</summary>
+    <div class="filter-body">
+
+      <div class="filter-group">
+        <strong>Engine</strong>
+        <div class="checkboxes">
+          {engines.map((key) => (
+            <label>
+              <input type="checkbox" name="engine" value={key} />
+              {key}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <strong>Version</strong>
+        <div class="checkboxes">
+          {versions.map((key) => (
+            <label>
+              <input type="checkbox" name="version" value={key} />
+              {key}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div class="filter-group wagon-group">
+        <strong>Wagon（全て含む行のみ表示）</strong>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="wagon">Wagon</button>
+          <button class="tab-btn" data-tab="biome">Biome</button>
+        </div>
+        <div class="tab-panel active" data-panel="wagon">
+          <div class="checkboxes wagons">
+            {wagonOnly.map((key) => (
+              <label>
+                <input type="checkbox" name="wagon" value={key} />
+                {key}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="biome">
+          <div class="checkboxes wagons">
+            {biomeWagons.map((key) => (
+              <label>
+                <input type="checkbox" name="wagon" value={key} />
+                {key}
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <strong>表示設定</strong>
+        <label>
+          <input type="checkbox" id="hide-tasks" />
+          Task列を非表示
+        </label>
+      </div>
+
+      <button id="filter-reset">リセット</button>
+    </div>
+  </details>
+</div>
+
+<style>
+  #filter-panel {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+
+  details > summary {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 4px 0;
+    user-select: none;
+  }
+
+  .filter-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 0.75rem 0;
+    align-items: flex-start;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .checkboxes.wagons {
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    gap: 0.25rem 1rem;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* タブ */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .tab-btn {
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    background: #f5f5f5;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .tab-btn.active {
+    background: #fff;
+    font-weight: bold;
+    position: relative;
+    bottom: -1px;
+    border-bottom: 1px solid #fff;
+  }
+
+  .tab-panel {
+    display: none;
+    padding-top: 0.5rem;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  #filter-reset {
+    align-self: flex-end;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  // タブ切り替え
+  document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tabName = btn.dataset.tab!;
+      const group = btn.closest('.wagon-group')!;
+      group.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      group.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+      btn.classList.add('active');
+      group.querySelector(`[data-panel="${tabName}"]`)!.classList.add('active');
+    });
+  });
+
+  // フィルター
+  function applyFilter() {
+    const selectedWagons = [
+      ...document.querySelectorAll<HTMLInputElement>('input[name="wagon"]:checked'),
+    ].map((el) => el.value);
+
+    const selectedEngines = [
+      ...document.querySelectorAll<HTMLInputElement>('input[name="engine"]:checked'),
+    ].map((el) => el.value);
+
+    const selectedVersions = [
+      ...document.querySelectorAll<HTMLInputElement>('input[name="version"]:checked'),
+    ].map((el) => el.value);
+
+    const rows = document.querySelectorAll<HTMLTableRowElement>('tbody tr');
+
+    rows.forEach((row) => {
+      const rowWagons = (row.dataset.wagon ?? '').split(',');
+      const rowEngine = row.dataset.engine ?? '';
+      const rowVersion = row.dataset.version ?? '';
+
+      const wagonMatch =
+        selectedWagons.length === 0 || selectedWagons.every((w) => rowWagons.includes(w));
+      const engineMatch =
+        selectedEngines.length === 0 || selectedEngines.includes(rowEngine);
+      const versionMatch =
+        selectedVersions.length === 0 || selectedVersions.includes(rowVersion);
+
+      row.style.display = wagonMatch && engineMatch && versionMatch ? '' : 'none';
+    });
+  }
+
+  document
+    .querySelectorAll<HTMLInputElement>('input[name="wagon"], input[name="engine"], input[name="version"]')
+    .forEach((cb) => cb.addEventListener('change', applyFilter));
+
+  document.getElementById('filter-reset')?.addEventListener('click', () => {
+    document
+      .querySelectorAll<HTMLInputElement>('input[name="wagon"], input[name="engine"], input[name="version"]')
+      .forEach((cb) => (cb.checked = false));
+    applyFilter();
+  });
+
+  // Task列 表示/非表示
+  const hideTasksCheckbox = document.getElementById('hide-tasks') as HTMLInputElement | null;
+  const STORAGE_KEY = 'u2:hide-tasks';
+
+  function applyHideTasks(hide: boolean) {
+    document.querySelectorAll('.table-wrap').forEach((el) => {
+      el.classList.toggle('hide-tasks', hide);
+    });
+    hideTasksCheckbox!.checked = hide;
+  }
+
+  if (hideTasksCheckbox) {
+    applyHideTasks(localStorage.getItem(STORAGE_KEY) === 'true');
+
+    hideTasksCheckbox.addEventListener('change', () => {
+      const hide = hideTasksCheckbox.checked;
+      localStorage.setItem(STORAGE_KEY, String(hide));
+      applyHideTasks(hide);
+    });
+  }
+</script>

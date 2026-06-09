@@ -1,6 +1,6 @@
 ---
 import fs from 'node:fs/promises';
-import { translateTask, translateExtension } from '../data/labels';
+import { translateTask, translateExtension, translateWagon } from '../data/labels';
 
 // CSV読み込み
 const csvText = await fs.readFile('seeds.csv', 'utf-8');
@@ -25,6 +25,7 @@ interface SeedRow {
   lowerTask: string;
   lowerExtension: string;
   wagons: string[];
+  wagonDisplay: string[];
   engine: string;
   version: string;
   // data属性用の生キー
@@ -54,6 +55,7 @@ const decoded: SeedRow[] = rows.map((r) => {
     lowerTask: translateTask(lowerTaskKey),
     lowerExtension: translateExtension(lowerExtKey),
     wagons: wagonKeys,
+    wagonDisplay: wagonKeys.map(translateWagon),
     engine: engineKey,
     version: versionKey,
     upperTaskKey,
@@ -90,7 +92,8 @@ const decoded: SeedRow[] = rows.map((r) => {
             data-lower-task={row.lowerTaskKey}
             data-lower-extension={row.lowerExtensionKey}
             data-wagon={row.wagons.join(',')}
-            data-engine={row.engineKey}>
+            data-engine={row.engineKey}
+            data-version={row.versionKey}>
             <td class="seed-cell" data-copy={row.seed}>
               <code>{row.seed}</code>
             </td>
@@ -98,7 +101,7 @@ const decoded: SeedRow[] = rows.map((r) => {
             <td>{row.upperExtension}</td>
             <td>{row.lowerTask}</td>
             <td>{row.lowerExtension}</td>
-            <td>{row.wagons.join(', ')}</td>
+            <td>{row.wagonDisplay.join(', ')}</td>
             <td>{row.engine}</td>
             <td>{row.version}</td>
           </tr>
@@ -170,6 +173,11 @@ const decoded: SeedRow[] = rows.map((r) => {
   :global(.seed-cell.copied code::after) {
     content: ' ✓';
     color: green;
+  }
+
+  :global(.hide-tasks) :is(th, td):nth-child(2),
+  :global(.hide-tasks) :is(th, td):nth-child(4) {
+    display: none;
   }
 </style>
 

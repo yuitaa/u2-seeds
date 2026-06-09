@@ -35,3 +35,34 @@ export function translateTask(key: string): string {
 export function translateExtension(key: string): string {
   return extensionLabels[key] ?? key;
 }
+
+export const wagonLabels: Record<string, string> = {
+  boiler: 'ボイラー荒地',
+  boxcar: 'ボックスカー湿原',
+  cannon: 'キャノンカート',
+  cargo: 'カーゴ渓谷',
+  carriage: '輸送ワゴン',
+  collector: '回収ワゴン',
+  compactor: '圧縮ワゴン',
+  crafter: 'クラフトワゴン',
+  dynamite: 'ダイナマイトワゴン',
+  ghost: 'ゴーストワゴン',
+  island: 'アイランドIC',
+  lab: '地下ユニット',
+  loco: 'ロコ迷宮',
+  mag_tractor: 'マグネットワゴン',
+  milk: 'ミルクワゴン',
+  miner: '採掘ワゴン',
+  monorail: 'モノレール平原',
+  slot: 'スロットワゴン',
+  storage: '貨物ワゴン',
+  supercharger: 'スーパーチャージワゴン',
+  tank: 'タンクワゴン',
+  torpedo: '魚雷ワゴン',
+  transformer: '変換ワゴン',
+  turret: 'タレットワゴン',
+};
+
+export function translateWagon(key: string): string {
+  return wagonLabels[key] ?? key;
+}
