@@ -53,21 +53,21 @@ tbody tr:nth-child(even) {
   border-radius: 2px;
 }
 
-:global(.seed-cell) {
+.seed-cell {
   cursor: pointer;
   user-select: none;
 }
 
-:global(.seed-cell:hover code) {
+.seed-cell:hover code {
   text-decoration: underline;
 }
 
-:global(.seed-cell.copied code::after) {
+.seed-cell.copied code::after {
   content: ' ✓';
   color: green;
 }
 
-:global(.hide-tasks) :is(th, td):nth-child(2),
-:global(.hide-tasks) :is(th, td):nth-child(4) {
+.hide-tasks :is(th, td):nth-child(2),
+.hide-tasks :is(th, td):nth-child(4) {
   display: none;
 }
