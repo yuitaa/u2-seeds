@@ -2,6 +2,8 @@
 import fs from 'node:fs/promises';
 import { translateWagon } from '../data/labels';
 
+import '../styles/panel.css';
+
 const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
 
 const BIOME_WAGONS = new Set([
@@ -100,107 +102,6 @@ const versions = Object.keys(mappingJson.versions).sort();
     </div>
   </details>
 </div>
-
-<style>
-  #filter-panel {
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-  }
-
-  details > summary {
-    cursor: pointer;
-    font-weight: bold;
-    padding: 4px 0;
-    user-select: none;
-  }
-
-  .filter-body {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    padding: 0.75rem 0;
-    align-items: flex-start;
-  }
-
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  .checkboxes {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .checkboxes.wagons {
-    display: grid;
-    grid-template-columns: repeat(3, max-content);
-    gap: 0.25rem 1rem;
-  }
-
-  @media (max-width: 600px) {
-    .checkboxes.wagons {
-      grid-template-columns: max-content;
-    }
-  }
-
-  @media (min-width: 601px) and (max-width: 900px) {
-    .checkboxes.wagons {
-      grid-template-columns: repeat(2, max-content);
-    }
-  }
-
-  label {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  /* タブ */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid #ccc;
-  }
-
-  .tab-btn {
-    padding: 3px 10px;
-    font-size: 0.8rem;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    background: #f5f5f5;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .tab-btn.active {
-    background: #fff;
-    font-weight: bold;
-    position: relative;
-    bottom: -1px;
-    border-bottom: 1px solid #fff;
-  }
-
-  .tab-panel {
-    display: none;
-    padding-top: 0.5rem;
-  }
-
-  .tab-panel.active {
-    display: block;
-  }
-
-  #filter-reset {
-    align-self: flex-end;
-    padding: 4px 12px;
-    font-size: 0.8rem;
-    cursor: pointer;
-  }
-</style>
 
 <script>
   // タブ切り替え

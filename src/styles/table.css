@@ -1,0 +1,73 @@
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #ccc;
+  min-width: max-content;
+  font-size: 0.875rem;
+}
+
+th,
+td {
+  padding: 6px 12px;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  white-space: nowrap;
+  text-align: left;
+}
+
+th:last-child,
+td:last-child {
+  border-right: none;
+}
+
+thead tr:last-child th {
+  border-bottom: 1px solid #ccc;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+th {
+  background: #f0f0f0;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+}
+
+tbody tr:nth-child(odd) {
+  background: #fff;
+}
+
+tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.biome-wagon {
+  background: #fff5cc;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+:global(.seed-cell) {
+  cursor: pointer;
+  user-select: none;
+}
+
+:global(.seed-cell:hover code) {
+  text-decoration: underline;
+}
+
+:global(.seed-cell.copied code::after) {
+  content: ' ✓';
+  color: green;
+}
+
+:global(.hide-tasks) :is(th, td):nth-child(2),
+:global(.hide-tasks) :is(th, td):nth-child(4) {
+  display: none;
+}
