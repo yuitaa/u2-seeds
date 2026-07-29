@@ -25,7 +25,10 @@ import '../styles/table.css';
 <div id="pagination-bottom" class="pagination"></div>
 
 <script>
-  import path from 'path';
+  const joinPath = (base: string, path: string) => {
+    if (!base) return `/${path.replace(/^\/+/, '')}`;
+    return `${base.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
+  };
 
   const PAGE_SIZE = 1000;
   const BIOME_WAGONS = new Set([
@@ -114,8 +117,12 @@ import '../styles/table.css';
 
   async function loadData() {
     const [csvText, mappingJson] = await Promise.all([
-      fetch(path.join(base, 'data/seeds.csv')).then((r) => r.text()),
-      fetch(path.join(base, 'data/mapping.json')).then((r) => r.json()),
+      fetch(
+        new URL(joinPath(base, 'data/seeds.csv'), window.location.href),
+      ).then((r) => r.text()),
+      fetch(
+        new URL(joinPath(base, 'data/mapping.json'), window.location.href),
+      ).then((r) => r.json()),
     ]);
 
     const tasksRev = new Map(
