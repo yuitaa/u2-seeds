@@ -8,7 +8,7 @@ interface Mapping {
   versions: Map<string, number>;
 }
 
-const mappingData = await fs.readFile('mapping.json', 'utf-8');
+const mappingData = await fs.readFile('public/data/mapping.json', 'utf-8');
 const mapping = JSON.parse(mappingData) as Mapping;
 
 export const tasksReverse = new Map(
