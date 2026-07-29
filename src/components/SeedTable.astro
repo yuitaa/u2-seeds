@@ -25,6 +25,8 @@ import '../styles/table.css';
 <div id="pagination-bottom" class="pagination"></div>
 
 <script>
+  import path from 'path';
+
   const PAGE_SIZE = 1000;
   const BIOME_WAGONS = new Set([
     'boiler',
@@ -112,8 +114,8 @@ import '../styles/table.css';
 
   async function loadData() {
     const [csvText, mappingJson] = await Promise.all([
-      fetch(`${base}data/seeds.csv`).then((r) => r.text()),
-      fetch(`${base}data/mapping.json`).then((r) => r.json()),
+      fetch(path.join(base, 'data/seeds.csv')).then((r) => r.text()),
+      fetch(path.join(base, 'data/mapping.json')).then((r) => r.json()),
     ]);
 
     const tasksRev = new Map(
