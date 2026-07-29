@@ -41,7 +41,7 @@ func main() {
 	}()
 
 	// マッピング用レジストリの初期化
-	registry, err := mapping.NewRegistry("mapping.json")
+	registry, err := mapping.NewRegistry("public/data/mapping.json")
 	if err != nil {
 		log.Fatalf("マッピングレジストリの初期化に失敗しました: %v", err)
 	}
@@ -59,7 +59,7 @@ func main() {
 	seedGenerator := seed.NewSeedGenerator()
 	move.PressAltTab()
 
-	fileName := "seeds.csv"
+	fileName := "public/data/seeds.csv"
 	fileExist := true
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		fileExist = false
