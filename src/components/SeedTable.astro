@@ -1,93 +1,8 @@
 ---
-import fs from 'node:fs/promises';
-import {
-  translateTask,
-  translateExtension,
-  translateWagon,
-} from '../data/labels';
-
 import '../styles/table.css';
-
-// CSV読み込み
-const csvText = await fs.readFile('seeds.csv', 'utf-8');
-const lines = csvText.trim().split('\n');
-const rows = lines
-  .slice(1)
-  .reverse()
-  .map((line) => line.split(','));
-
-// mapping.json読み込み・逆引きマップ作成
-const mappingJson = JSON.parse(await fs.readFile('mapping.json', 'utf-8'));
-const reverse = (obj: Record<string, number>): Map<number, string> =>
-  new Map(Object.entries(obj).map(([k, v]) => [v, k]));
-
-const tasksRev = reverse(mappingJson.tasks);
-const extensionsRev = reverse(mappingJson.extensions);
-const wagonsRev = reverse(mappingJson.wagons);
-const enginesRev = reverse(mappingJson.engines);
-const versionsRev = reverse(mappingJson.versions);
-
-const BIOME_WAGONS = new Set([
-  'boiler',
-  'boxcar',
-  'cargo',
-  'island',
-  'lab',
-  'loco',
-  'monorail',
-]);
-
-interface SeedRow {
-  seed: string;
-  upperTask: string;
-  upperExtension: string;
-  lowerTask: string;
-  lowerExtension: string;
-  wagons: string[];
-  wagonDisplay: string[];
-  wagonIsBiome: boolean[];
-  engine: string;
-  version: string;
-  // data属性用の生キー
-  upperTaskKey: string;
-  upperExtensionKey: string;
-  lowerTaskKey: string;
-  lowerExtensionKey: string;
-  engineKey: string;
-  versionKey: string;
-}
-
-const decoded: SeedRow[] = rows.map((r) => {
-  const upperTaskKey = tasksRev.get(Number(r[1])) ?? r[1];
-  const upperExtKey = extensionsRev.get(Number(r[2])) ?? r[2];
-  const lowerTaskKey = tasksRev.get(Number(r[3])) ?? r[3];
-  const lowerExtKey = extensionsRev.get(Number(r[4])) ?? r[4];
-  const wagonKeys = r[5]
-    .split(';')
-    .map((id) => wagonsRev.get(Number(id)) ?? id);
-  const engineKey = enginesRev.get(Number(r[6])) ?? r[6];
-  const versionKey = versionsRev.get(Number(r[7])) ?? r[7];
-
-  return {
-    seed: r[0],
-    upperTask: translateTask(upperTaskKey),
-    upperExtension: translateExtension(upperExtKey),
-    lowerTask: translateTask(lowerTaskKey),
-    lowerExtension: translateExtension(lowerExtKey),
-    wagons: wagonKeys,
-    wagonDisplay: wagonKeys.map(translateWagon),
-    wagonIsBiome: wagonKeys.map((k) => BIOME_WAGONS.has(k)),
-    engine: engineKey,
-    version: versionKey,
-    upperTaskKey,
-    upperExtensionKey: upperExtKey,
-    lowerTaskKey,
-    lowerExtensionKey: lowerExtKey,
-    engineKey,
-    versionKey,
-  };
-});
 ---
+
+<div id="pagination-top" class="pagination"></div>
 
 <div class="table-wrap">
   <table>
@@ -103,46 +18,235 @@ const decoded: SeedRow[] = rows.map((r) => {
         <th>Version</th>
       </tr>
     </thead>
-    <tbody>
-      {
-        decoded.map((row) => (
-          <tr
-            data-seed={row.seed}
-            data-upper-task={row.upperTaskKey}
-            data-upper-extension={row.upperExtensionKey}
-            data-lower-task={row.lowerTaskKey}
-            data-lower-extension={row.lowerExtensionKey}
-            data-wagon={row.wagons.join(',')}
-            data-engine={row.engineKey}
-            data-version={row.versionKey}>
-            <td class="seed-cell" data-copy={row.seed}>
-              <code>{row.seed}</code>
-            </td>
-            <td>{row.upperTask}</td>
-            <td>{row.upperExtension}</td>
-            <td>{row.lowerTask}</td>
-            <td>{row.lowerExtension}</td>
-            <td>
-              {row.wagonDisplay.map((name, i) => (
-                <span class:list={{ 'biome-wagon': row.wagonIsBiome[i] }}>
-                  {name}
-                  {i < row.wagonDisplay.length - 1 ? ', ' : ''}
-                </span>
-              ))}
-            </td>
-            <td>{row.engine}</td>
-            <td>{row.version}</td>
-          </tr>
-        ))
-      }
-    </tbody>
+    <tbody id="table-body"></tbody>
   </table>
 </div>
 
+<div id="pagination-bottom" class="pagination"></div>
+
 <script>
-  document
-    .querySelectorAll<HTMLTableCellElement>('.seed-cell')
-    .forEach((cell) => {
+  const PAGE_SIZE = 1000;
+  const BIOME_WAGONS = new Set([
+    'boiler',
+    'boxcar',
+    'cargo',
+    'island',
+    'lab',
+    'loco',
+    'monorail',
+  ]);
+
+  const taskLabels = {
+    chop_tree: '各プレイヤーが木を切ろう',
+    curve: 'カーブ線路を25マス敷こう',
+    dash: '50回ダッシュしよう',
+    dont_catch_fire: '列車が燃えないようにしよう',
+    hold_tools: '0:20以上続けて道具を持たないようにしよう',
+    keep_crafter_busy: 'クラフトワゴンをxx秒間連続稼働させよう',
+    kill_no_animals: '動物を殺さないようにしよう',
+    let_train_burn: '列車を0:10秒間燃やそう',
+    mine_rock: '各プレイヤーが岩を採掘しよう',
+    one_player_axe: '一人だけが斧を持とう',
+    one_player_track: '一人だけで線路を運ぼう',
+    stack_items: '一箇所に物資を20個積み上げよう',
+    straight: '直進線路をxxマス連続して敷こう',
+    tracks_ahead: '線路を8マス以上先に伸ばそう',
+  };
+
+  const extensionLabels = {
+    charge: 'スーパーチャージ',
+    drop: '自動ドロップ',
+    front: 'フロントプル',
+    ghost: 'ゴースト',
+    hydro: 'ハイドロチャージ',
+    magnet: 'マグネット吸引',
+    pull: '貨物引き寄せ',
+    push: '貨物押し出し',
+    speed: 'スピードブースト',
+    stack: 'スタックブースト',
+  };
+
+  const wagonLabels = {
+    boiler: 'ボイラー荒地',
+    boxcar: 'ボックスカー湿原',
+    bridge: 'ブリッジワゴン',
+    cannon: 'キャノンカート',
+    cargo: 'カーゴ渓谷',
+    carriage: '輸送ワゴン',
+    collector: '回収ワゴン',
+    compactor: '圧縮ワゴン',
+    crafter: 'クラフトワゴン',
+    dynamite: 'ダイナマイトワゴン',
+    ghost: 'ゴーストワゴン',
+    island: 'アイランドIC',
+    lab: '地下ユニット',
+    loco: 'ロコ迷宮',
+    mag_tractor: 'マグネットワゴン',
+    milk: 'ミルクワゴン',
+    miner: '採掘ワゴン',
+    monorail: 'モノレール平原',
+    slot: 'スロットワゴン',
+    storage: '貨物ワゴン',
+    supercharger: 'スーパーチャージワゴン',
+    tank: 'タンクワゴン',
+    torpedo: '魚雷ワゴン',
+    transformer: '変換ワゴン',
+    turret: 'タレットワゴン',
+  };
+
+  function translateTask(key) {
+    return taskLabels[key] ?? key;
+  }
+  function translateExtension(key) {
+    return extensionLabels[key] ?? key;
+  }
+  function translateWagon(key) {
+    return wagonLabels[key] ?? key;
+  }
+
+  let allData = [];
+  let filteredData = [];
+  let currentPage = 1;
+
+  const base = import.meta.env.BASE_URL;
+
+  async function loadData() {
+    const [csvText, mappingJson] = await Promise.all([
+      fetch(`${base}data/seeds.csv`).then((r) => r.text()),
+      fetch(`${base}data/mapping.json`).then((r) => r.json()),
+    ]);
+
+    const tasksRev = new Map(
+      Object.entries(mappingJson.tasks).map(([k, v]) => [v, k]),
+    );
+    const extensionsRev = new Map(
+      Object.entries(mappingJson.extensions).map(([k, v]) => [v, k]),
+    );
+    const wagonsRev = new Map(
+      Object.entries(mappingJson.wagons).map(([k, v]) => [v, k]),
+    );
+    const enginesRev = new Map(
+      Object.entries(mappingJson.engines).map(([k, v]) => [v, k]),
+    );
+    const versionsRev = new Map(
+      Object.entries(mappingJson.versions).map(([k, v]) => [v, k]),
+    );
+
+    const lines = csvText.trim().split('\n');
+    const rows = lines
+      .slice(1)
+      .reverse()
+      .map((line) => line.split(','));
+
+    allData = rows.map((r) => {
+      const upperTaskKey = tasksRev.get(Number(r[1])) ?? r[1];
+      const upperExtKey = extensionsRev.get(Number(r[2])) ?? r[2];
+      const lowerTaskKey = tasksRev.get(Number(r[3])) ?? r[3];
+      const lowerExtKey = extensionsRev.get(Number(r[4])) ?? r[4];
+      const wagonKeys = r[5]
+        .split(';')
+        .map((id) => wagonsRev.get(Number(id)) ?? id);
+      const engineKey = enginesRev.get(Number(r[6])) ?? r[6];
+      const versionKey = versionsRev.get(Number(r[7])) ?? r[7];
+
+      return {
+        seed: r[0],
+        upperTask: translateTask(upperTaskKey),
+        upperExtension: translateExtension(upperExtKey),
+        lowerTask: translateTask(lowerTaskKey),
+        lowerExtension: translateExtension(lowerExtKey),
+        wagons: wagonKeys,
+        wagonDisplay: wagonKeys.map(translateWagon),
+        wagonIsBiome: wagonKeys.map((k) => BIOME_WAGONS.has(k)),
+        engine: engineKey,
+        version: versionKey,
+        upperTaskKey,
+        upperExtensionKey: upperExtKey,
+        lowerTaskKey,
+        lowerExtensionKey: lowerExtKey,
+        engineKey,
+        versionKey,
+      };
+    });
+
+    applyFilter();
+  }
+
+  function getFilterValues() {
+    const selectedWagons = [
+      ...document.querySelectorAll('input[name="wagon"]:checked'),
+    ].map((el) => el.value);
+    const selectedEngines = [
+      ...document.querySelectorAll('input[name="engine"]:checked'),
+    ].map((el) => el.value);
+    const selectedVersions = [
+      ...document.querySelectorAll('input[name="version"]:checked'),
+    ].map((el) => el.value);
+    return { selectedWagons, selectedEngines, selectedVersions };
+  }
+
+  function applyFilter() {
+    const { selectedWagons, selectedEngines, selectedVersions } =
+      getFilterValues();
+
+    filteredData = allData.filter((row) => {
+      const wagonMatch =
+        selectedWagons.length === 0 ||
+        selectedWagons.every((w) => row.wagons.includes(w));
+      const engineMatch =
+        selectedEngines.length === 0 || selectedEngines.includes(row.engineKey);
+      const versionMatch =
+        selectedVersions.length === 0 ||
+        selectedVersions.includes(row.versionKey);
+      return wagonMatch && engineMatch && versionMatch;
+    });
+
+    currentPage = 1;
+    render();
+  }
+
+  function render() {
+    const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageData = filteredData.slice(start, start + PAGE_SIZE);
+
+    renderTable(pageData);
+    renderPagination(currentPage, totalPages);
+    updateResultCount(filteredData.length);
+  }
+
+  function renderTable(rows) {
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = rows
+      .map((row) => {
+        const wagonHtml = row.wagonDisplay
+          .map(
+            (name, i) =>
+              `<span${row.wagonIsBiome[i] ? ' class="biome-wagon"' : ''}>${name}${i < row.wagonDisplay.length - 1 ? ', ' : ''}</span>`,
+          )
+          .join('');
+        return `<tr
+        data-seed="${row.seed}"
+        data-upper-task="${row.upperTaskKey}"
+        data-upper-extension="${row.upperExtensionKey}"
+        data-lower-task="${row.lowerTaskKey}"
+        data-lower-extension="${row.lowerExtensionKey}"
+        data-wagon="${row.wagons.join(',')}"
+        data-engine="${row.engineKey}"
+        data-version="${row.versionKey}">
+        <td class="seed-cell" data-copy="${row.seed}"><code>${row.seed}</code></td>
+        <td>${row.upperTask}</td>
+        <td>${row.upperExtension}</td>
+        <td>${row.lowerTask}</td>
+        <td>${row.lowerExtension}</td>
+        <td>${wagonHtml}</td>
+        <td>${row.engine}</td>
+        <td>${row.version}</td>
+      </tr>`;
+      })
+      .join('');
+
+    tbody.querySelectorAll('.seed-cell').forEach((cell) => {
       cell.addEventListener('click', async () => {
         const text = cell.dataset.copy ?? '';
         await navigator.clipboard.writeText(text);
@@ -150,4 +254,80 @@ const decoded: SeedRow[] = rows.map((r) => {
         setTimeout(() => cell.classList.remove('copied'), 1500);
       });
     });
+
+    const hideTasks = document.getElementById('hide-tasks');
+    if (hideTasks && hideTasks.checked) {
+      document.querySelector('.table-wrap').classList.add('hide-tasks');
+    }
+  }
+
+  function renderPagination(current, total) {
+    const html = paginationHtml(current, total);
+
+    const topEl = document.getElementById('pagination-top');
+    const bottomEl = document.getElementById('pagination-bottom');
+    topEl.innerHTML = html;
+    bottomEl.innerHTML = html;
+
+    [topEl, bottomEl].forEach((el) => {
+      el.querySelectorAll('.page-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (btn.disabled) return;
+          const page = Number(btn.dataset.page);
+          if (page !== currentPage) {
+            currentPage = page;
+            renderTable(
+              filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+            );
+            renderPagination(page, total);
+          }
+        });
+      });
+    });
+  }
+
+  function paginationHtml(current, total) {
+    if (total <= 1) return '';
+
+    let html = '<div class="pagination-inner">';
+    html += `<button class="page-btn" data-page="${current - 1}"${current === 1 ? ' disabled' : ''}>&lsaquo;</button>`;
+    for (let i = 1; i <= total; i++) {
+      html += `<button class="page-btn${i === current ? ' active' : ''}" data-page="${i}">${i}</button>`;
+    }
+    html += `<button class="page-btn" data-page="${current + 1}"${current === total ? ' disabled' : ''}>&rsaquo;</button>`;
+    html += '</div>';
+    html += `<span class="page-total"> / ${total} pages</span>`;
+    return html;
+  }
+
+  function updateResultCount(count) {
+    const el = document.getElementById('result-count');
+    if (!el) return;
+    if (count === 0) {
+      el.textContent = '検索結果: 0 件';
+      return;
+    }
+    const start = (currentPage - 1) * PAGE_SIZE + 1;
+    const end = Math.min(currentPage * PAGE_SIZE, count);
+    el.textContent = `検索結果: ${start}件目〜${end}件目 / ${count}件`;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document
+      .querySelectorAll(
+        'input[name="wagon"], input[name="engine"], input[name="version"]',
+      )
+      .forEach((cb) => cb.addEventListener('change', applyFilter));
+
+    document.getElementById('filter-reset')?.addEventListener('click', () => {
+      document
+        .querySelectorAll(
+          'input[name="wagon"], input[name="engine"], input[name="version"]',
+        )
+        .forEach((cb) => (cb.checked = false));
+      applyFilter();
+    });
+
+    loadData();
+  });
 </script>

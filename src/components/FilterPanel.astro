@@ -120,65 +120,6 @@ const versions = Object.keys(mappingJson.versions).sort();
     });
   });
 
-  // フィルター
-  function applyFilter() {
-    const selectedWagons = [
-      ...document.querySelectorAll<HTMLInputElement>(
-        'input[name="wagon"]:checked',
-      ),
-    ].map((el) => el.value);
-
-    const selectedEngines = [
-      ...document.querySelectorAll<HTMLInputElement>(
-        'input[name="engine"]:checked',
-      ),
-    ].map((el) => el.value);
-
-    const selectedVersions = [
-      ...document.querySelectorAll<HTMLInputElement>(
-        'input[name="version"]:checked',
-      ),
-    ].map((el) => el.value);
-
-    const rows = document.querySelectorAll<HTMLTableRowElement>('tbody tr');
-
-    rows.forEach((row) => {
-      const rowWagons = (row.dataset.wagon ?? '').split(',');
-      const rowEngine = row.dataset.engine ?? '';
-      const rowVersion = row.dataset.version ?? '';
-
-      const wagonMatch =
-        selectedWagons.length === 0 ||
-        selectedWagons.every((w) => rowWagons.includes(w));
-      const engineMatch =
-        selectedEngines.length === 0 || selectedEngines.includes(rowEngine);
-      const versionMatch =
-        selectedVersions.length === 0 || selectedVersions.includes(rowVersion);
-
-      row.style.display =
-        wagonMatch && engineMatch && versionMatch ? '' : 'none';
-    });
-
-    const visible = [...rows].filter((r) => r.style.display !== 'none').length;
-    const el = document.getElementById('result-count');
-    if (el) el.textContent = `検索結果: ${visible} 件`;
-  }
-
-  document
-    .querySelectorAll<HTMLInputElement>(
-      'input[name="wagon"], input[name="engine"], input[name="version"]',
-    )
-    .forEach((cb) => cb.addEventListener('change', applyFilter));
-
-  document.getElementById('filter-reset')?.addEventListener('click', () => {
-    document
-      .querySelectorAll<HTMLInputElement>(
-        'input[name="wagon"], input[name="engine"], input[name="version"]',
-      )
-      .forEach((cb) => (cb.checked = false));
-    applyFilter();
-  });
-
   // Task列 表示/非表示
   const hideTasksCheckbox = document.getElementById(
     'hide-tasks',
@@ -201,6 +142,4 @@ const versions = Object.keys(mappingJson.versions).sort();
       applyHideTasks(hide);
     });
   }
-
-  applyFilter();
 </script>

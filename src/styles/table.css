@@ -71,3 +71,55 @@ tbody tr:nth-child(even) {
 .hide-tasks :is(th, td):nth-child(4) {
   display: none;
 }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.pagination-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.page-btn {
+  min-width: 2rem;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-align: center;
+  user-select: none;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.page-btn.active {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+  font-weight: bold;
+}
+
+.page-btn:disabled {
+  color: #ccc;
+  cursor: default;
+}
+
+.page-ellipsis {
+  padding: 0 4px;
+  color: #999;
+}
+
+.page-total {
+  color: #666;
+  font-size: 0.8rem;
+}
